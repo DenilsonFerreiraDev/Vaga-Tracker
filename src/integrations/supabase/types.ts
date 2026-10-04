@@ -14,16 +14,141 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      jobs: {
+        Row: {
+          applied_at: string
+          company: string
+          created_at: string
+          follow_up_date: string | null
+          id: string
+          job_url: string | null
+          notes: string | null
+          position: string
+          salary_range: string | null
+          status: Database["public"]["Enums"]["job_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string
+          company: string
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          job_url?: string | null
+          notes?: string | null
+          position: string
+          salary_range?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          applied_at?: string
+          company?: string
+          created_at?: string
+          follow_up_date?: string | null
+          id?: string
+          job_url?: string | null
+          notes?: string | null
+          position?: string
+          salary_range?: string | null
+          status?: Database["public"]["Enums"]["job_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      leads: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          professional_area: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          professional_area?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          professional_area?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      job_status:
+        | "aplicada"
+        | "em_analise"
+        | "entrevista_rh"
+        | "entrevista_tecnica"
+        | "teste_tecnico"
+        | "aguardando_retorno"
+        | "rejeitada"
+        | "aprovada"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +275,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      job_status: [
+        "aplicada",
+        "em_analise",
+        "entrevista_rh",
+        "entrevista_tecnica",
+        "teste_tecnico",
+        "aguardando_retorno",
+        "rejeitada",
+        "aprovada",
+      ],
+    },
   },
 } as const
