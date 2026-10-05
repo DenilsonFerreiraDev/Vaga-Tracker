@@ -36,11 +36,11 @@ function Page() {
     navigate({ to: "/" });
   }
   return (
-    <div className="flex min-h-screen items-center justify-center bg-soft px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center"><Logo /></div>
-        <form onSubmit={onSubmit} className="grid gap-4 rounded-2xl border bg-card p-6 shadow-card sm:p-8">
-          <h1 className="text-2xl font-bold">Definir nova senha</h1>
+        <form onSubmit={onSubmit} className="grid gap-4 rounded-xl border bg-card p-6 shadow-card sm:p-8">
+          <h1 className="text-xl font-semibold">Definir nova senha</h1>
           <div className="grid gap-1.5">
             <Label htmlFor="password">Nova senha</Label>
             <Input id="password" name="password" type="password" required minLength={6} autoComplete="new-password" />
@@ -49,7 +49,7 @@ function Page() {
             <Label htmlFor="confirm">Confirmar senha</Label>
             <Input id="confirm" name="confirm" type="password" required minLength={6} autoComplete="new-password" />
           </div>
-          <Button type="submit" size="lg" disabled={loading}>{loading ? "Salvando..." : "Salvar senha"}</Button>
+          <Button type="submit" disabled={loading}>{loading ? "Salvando..." : "Salvar senha"}</Button>
         </form>
       </div>
     </div>

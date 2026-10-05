@@ -73,13 +73,13 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-soft px-4 py-10">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center"><Logo /></div>
-        <div className="rounded-2xl border bg-card p-6 shadow-card sm:p-8">
+        <div className="rounded-xl border bg-card p-6 shadow-card sm:p-8">
           {sent ? (
             <div className="text-center">
-              <h1 className="text-2xl font-bold">Confirme seu e-mail</h1>
+              <h1 className="text-xl font-semibold">Confirme seu e-mail</h1>
               <p className="mt-3 text-muted-foreground">
                 Enviamos um link de confirmação. Clique nele para ativar sua conta.
               </p>
@@ -89,7 +89,7 @@ function AuthPage() {
             </div>
           ) : (
             <>
-              <h1 className="text-2xl font-bold">{mode === "login" ? "Bem-vindo de volta" : "Crie sua conta grátis"}</h1>
+              <h1 className="text-xl font-semibold">{mode === "login" ? "Bem-vindo de volta" : "Crie sua conta grátis"}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 {mode === "login" ? "Entre para acompanhar suas candidaturas." : "Leva menos de um minuto."}
               </p>
@@ -123,7 +123,7 @@ function AuthPage() {
                   <Input id="password" name="password" type="password" required minLength={6}
                     autoComplete={mode === "login" ? "current-password" : "new-password"} />
                 </div>
-                <Button type="submit" size="lg" disabled={loading}>
+                <Button type="submit" disabled={loading}>
                   {loading ? "Aguarde..." : mode === "login" ? "Entrar" : "Criar conta"}
                 </Button>
               </form>
