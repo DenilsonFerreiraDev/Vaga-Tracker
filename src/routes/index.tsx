@@ -1,24 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import {
-  ArrowRight, BellRing, BarChart3, CheckCircle2, ClipboardList, Layers, PlayCircle,
-  RefreshCw, Trophy, Briefcase, CalendarCheck, XCircle, Search,
-} from "lucide-react";
+import { ArrowRight, Check, Search, CornerDownLeft, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "VagaTracker — Organize sua busca por emprego" },
-      { name: "description", content: "Controle todas as suas candidaturas em um único lugar e acompanhe cada etapa do processo seletivo." },
-      { property: "og:title", content: "VagaTracker — Organize sua busca por emprego" },
-      { property: "og:description", content: "Registre vagas, acompanhe etapas e visualize métricas da sua busca por emprego." },
+      { title: "VagaTracker — Sua busca por emprego merece mais do que uma planilha" },
+      { name: "description", content: "A central de controle da sua busca por emprego: candidaturas, próximas ações e follow-ups em um só lugar." },
+      { property: "og:title", content: "VagaTracker — Central de controle da busca de emprego" },
+      { property: "og:description", content: "Pare de perder candidaturas, entrevistas e oportunidades." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -26,164 +23,191 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const benefits = [
-  { icon: ClipboardList, title: "Nunca perca uma candidatura", text: "Registre e centralize todas as vagas." },
-  { icon: Layers, title: "Acompanhe cada etapa", text: "Monitore entrevistas, testes e retornos." },
-  { icon: BarChart3, title: "Visualize sua evolução", text: "Acompanhe métricas e resultados da sua busca." },
+type Stage = "Aplicada" | "Em análise" | "Entrevista" | "Teste técnico" | "Aprovada" | "Rejeitada";
+const STAGE_DOT: Record<Stage, string> = {
+  Aplicada: "text-muted-foreground",
+  "Em análise": "text-warning",
+  Entrevista: "text-primary",
+  "Teste técnico": "text-primary",
+  Aprovada: "text-success",
+  Rejeitada: "text-destructive",
+};
+
+const SAMPLE: { company: string; role: string; stage: Stage; next: string; followUp: string; due?: boolean }[] = [
+  { company: "Nubank", role: "Analista de Dados Jr.", stage: "Entrevista", next: "Preparar case técnico", followUp: "Hoje", due: true },
+  { company: "iFood", role: "Desenvolvedora Front-end", stage: "Teste técnico", next: "Entregar desafio no GitHub", followUp: "Amanhã", due: true },
+  { company: "Ambev", role: "Trainee 2027", stage: "Em análise", next: "Mandar mensagem ao recrutador", followUp: "12 out" },
+  { company: "Stone", role: "UX Designer", stage: "Aprovada", next: "Revisar proposta", followUp: "14 out" },
+  { company: "Itaú", role: "Estágio em Produto", stage: "Aplicada", next: "Aguardar retorno", followUp: "18 out" },
+  { company: "Mercado Livre", role: "QA Analyst", stage: "Rejeitada", next: "Pedir feedback", followUp: "—" },
 ];
 
-const steps = [
-  { icon: Briefcase, text: "Cadastre uma vaga." },
-  { icon: RefreshCw, text: "Atualize o status do processo." },
-  { icon: BarChart3, text: "Visualize suas métricas." },
-  { icon: Trophy, text: "Conquiste sua próxima oportunidade." },
-];
+const FILTERS = ["Todas", "Em andamento", "Follow-up"] as const;
 
 function Landing() {
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Logo />
-          <nav className="flex items-center gap-2">
-            <Button asChild variant="ghost" className="hidden sm:inline-flex">
-              <Link to="/auth">Entrar</Link>
-            </Button>
-            <Button asChild>
-              <Link to="/auth" search={{ mode: "signup" }}>Começar grátis</Link>
-            </Button>
+          <nav className="flex items-center gap-1 text-sm">
+            <Button asChild variant="ghost" size="sm"><Link to="/auth">Entrar</Link></Button>
+            <Button asChild size="sm"><Link to="/auth" search={{ mode: "signup" }}>Criar conta</Link></Button>
           </nav>
         </div>
       </header>
 
       <main>
-        {/* Hero */}
-        <section className="bg-soft">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 md:py-24 lg:grid-cols-2">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-semibold text-primary shadow-soft">
-                <CheckCircle2 className="h-3.5 w-3.5" aria-hidden /> Seu CRM pessoal de carreira
-              </span>
-              <h1 className="mt-5 text-4xl font-extrabold leading-tight sm:text-5xl">
-                Organize sua busca por emprego e{" "}
-                <span className="text-primary">aumente suas chances</span> de conseguir entrevistas.
-              </h1>
-              <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-                Controle todas as suas candidaturas em um único lugar e acompanhe cada etapa do processo seletivo.
-              </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-                <Button asChild size="lg" className="h-12 px-6 shadow-glow">
-                  <Link to="/auth" search={{ mode: "signup" }}>
-                    Começar Gratuitamente <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="h-12 px-6 bg-card">
-                  <a href="#demo"><PlayCircle className="mr-1 h-4 w-4" /> Ver Demonstração</a>
-                </Button>
-              </div>
+        <section className="relative overflow-hidden border-b">
+          <div className="pointer-events-none absolute inset-0 bg-grid opacity-60" aria-hidden />
+          <div className="relative mx-auto max-w-6xl px-4 pb-16 pt-14 sm:px-6 md:pt-20">
+            <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">
+              Central de controle da busca de emprego
+            </p>
+            <h1 className="mt-4 max-w-2xl text-3xl font-semibold leading-[1.1] sm:text-[44px]">
+              Sua busca por emprego merece mais do que uma planilha.
+            </h1>
+            <p className="mt-4 max-w-xl text-base text-muted-foreground">
+              Saiba exatamente onde está cada candidatura, qual é o próximo passo e quem você precisa responder hoje.
+            </p>
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Button asChild>
+                <Link to="/auth" search={{ mode: "signup" }}>Começar gratuitamente <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              </Button>
+              <span className="text-sm text-muted-foreground">Grátis. Sem cartão.</span>
             </div>
-            <DemoPreview />
+
+            <div className="mt-12"><LivePreview /></div>
           </div>
         </section>
 
-        {/* Benefícios */}
-        <section className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-center text-3xl font-extrabold">Tudo o que você precisa para ser contratado</h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {benefits.map((b) => (
-              <article key={b.title} className="rounded-2xl border bg-card p-6 shadow-soft transition-shadow hover:shadow-card">
-                <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-secondary text-primary">
-                  <b.icon className="h-6 w-6" aria-hidden />
-                </div>
-                <h3 className="mt-5 text-lg font-bold">{b.title}</h3>
-                <p className="mt-2 text-muted-foreground">{b.text}</p>
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+          <div className="grid gap-px overflow-hidden rounded-lg border bg-border md:grid-cols-3">
+            {[
+              ["01", "Nenhuma candidatura esquecida", "Vagas do LinkedIn, Gupy e e-mail num só lugar, com link, salário e anotações."],
+              ["02", "O próximo passo sempre claro", "Cada processo tem uma etapa e uma próxima ação. Você abre e já sabe o que fazer."],
+              ["03", "Follow-up no momento certo", "Defina a data de retorno e o VagaTracker avisa quando é hora de cobrar o recrutador."],
+            ].map(([n, t, d]) => (
+              <article key={n} className="bg-card p-6">
+                <span className="font-mono text-xs text-muted-foreground">{n}</span>
+                <h2 className="mt-3 text-base font-semibold tracking-tight">{t}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{d}</p>
               </article>
             ))}
           </div>
         </section>
 
-        {/* Como funciona */}
-        <section id="demo" className="scroll-mt-20 border-y bg-card">
-          <div className="mx-auto max-w-6xl px-4 py-20">
-            <h2 className="text-center text-3xl font-extrabold">Como funciona</h2>
-            <ol className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {steps.map((s, i) => (
-                <li key={s.text} className="relative rounded-2xl border bg-background p-6">
-                  <span className="text-sm font-bold text-primary">Passo {i + 1}</span>
-                  <s.icon className="mt-4 h-7 w-7 text-primary-deep" aria-hidden />
-                  <p className="mt-3 font-semibold">{s.text}</p>
+        <section className="border-y bg-card">
+          <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-[1fr_1.2fr]">
+            <div>
+              <h2 className="text-2xl font-semibold">Pensado para quem está na correria.</h2>
+              <p className="mt-3 text-sm text-muted-foreground">
+                Estudantes, recém-formados e profissionais em recolocação usam o VagaTracker para trocar a ansiedade pela clareza.
+              </p>
+            </div>
+            <ol className="grid gap-3 text-sm">
+              {["Salve a vaga em segundos", "Atualize a etapa depois de cada contato", "Veja suas taxas de resposta e entrevista", "Ajuste a estratégia e conquiste a vaga"].map((s, i) => (
+                <li key={s} className="flex items-center gap-4 rounded-md border bg-background px-4 py-3">
+                  <span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="font-medium">{s}</span>
                 </li>
               ))}
             </ol>
           </div>
         </section>
 
-        {/* Lead capture */}
-        <section className="mx-auto max-w-6xl px-4 py-20">
-          <LeadForm />
-        </section>
+        <section className="mx-auto max-w-6xl px-4 py-20 sm:px-6"><LeadForm /></section>
 
-        {/* CTA Final */}
-        <section className="px-4 pb-24">
-          <div className="mx-auto max-w-6xl rounded-3xl bg-hero px-6 py-16 text-center text-primary-foreground shadow-card">
-            <h2 className="text-3xl font-extrabold sm:text-4xl">Pare de perder oportunidades.</h2>
-            <p className="mx-auto mt-3 max-w-xl text-primary-foreground/80">
-              Comece agora e tenha controle total da sua busca por emprego.
-            </p>
-            <Button asChild size="lg" variant="secondary" className="mt-8 h-12 px-8">
-              <Link to="/auth" search={{ mode: "signup" }}>Começar Agora <ArrowRight className="ml-1 h-4 w-4" /></Link>
-            </Button>
+        <section className="border-t">
+          <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 px-4 py-14 sm:flex-row sm:items-center sm:px-6">
+            <h2 className="text-2xl font-semibold">Pare de perder candidaturas, entrevistas e oportunidades.</h2>
+            <Button asChild><Link to="/auth" search={{ mode: "signup" }}>Começar agora <ArrowRight className="ml-1 h-4 w-4" /></Link></Button>
           </div>
         </section>
       </main>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">
-        © {new Date().getFullYear()} VagaTracker. Todos os direitos reservados.
+      <footer className="border-t py-8">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 text-xs text-muted-foreground sm:px-6">
+          <span>© {new Date().getFullYear()} VagaTracker</span>
+          <span className="font-mono">feito no Brasil</span>
+        </div>
       </footer>
     </div>
   );
 }
 
-function DemoPreview() {
-  const rows = [
-    { c: "Nubank", p: "Product Designer", s: "Entrevista Técnica", t: "bg-primary/10 text-primary" },
-    { c: "iFood", p: "Frontend Engineer", s: "Em análise", t: "bg-warning/15 text-foreground" },
-    { c: "Stone", p: "UX Researcher", s: "Aprovada", t: "bg-success/15 text-success" },
-    { c: "XP Inc.", p: "Data Analyst", s: "Rejeitada", t: "bg-destructive/10 text-destructive" },
-  ];
-  const stats = [
-    { icon: Briefcase, label: "Total", v: 24, t: "text-primary" },
-    { icon: CalendarCheck, label: "Entrevistas", v: 6, t: "text-primary-deep" },
-    { icon: Trophy, label: "Aprovadas", v: 2, t: "text-success" },
-    { icon: XCircle, label: "Rejeitadas", v: 5, t: "text-destructive" },
-  ];
+function LivePreview() {
+  const [filter, setFilter] = useState<(typeof FILTERS)[number]>("Todas");
+  const [q, setQ] = useState("");
+  const [done, setDone] = useState<Record<string, boolean>>({});
+
+  const rows = useMemo(() => SAMPLE.filter((r) => {
+    if (filter === "Em andamento" && (r.stage === "Aprovada" || r.stage === "Rejeitada")) return false;
+    if (filter === "Follow-up" && !r.due) return false;
+    const s = q.trim().toLowerCase();
+    return !s || `${r.company} ${r.role}`.toLowerCase().includes(s);
+  }), [filter, q]);
+
+  const dueCount = SAMPLE.filter((r) => r.due && !done[r.company]).length;
+
   return (
-    <div aria-hidden className="rounded-3xl border bg-card p-4 shadow-card sm:p-6">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border bg-background p-3">
-            <s.icon className={`h-4 w-4 ${s.t}`} />
-            <div className="mt-2 text-2xl font-extrabold">{s.v}</div>
-            <div className="text-xs text-muted-foreground">{s.label}</div>
-          </div>
-        ))}
+    <div className="overflow-hidden rounded-xl border bg-card shadow-card">
+      <div className="flex flex-col gap-3 border-b px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-1" role="tablist" aria-label="Filtrar candidaturas">
+          {FILTERS.map((f) => (
+            <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
+              className={cn("rounded-md px-2.5 py-1 text-sm transition-colors",
+                filter === f ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground")}>
+              {f}
+              {f === "Follow-up" && dueCount > 0 && (
+                <span className="ml-1.5 rounded bg-primary px-1.5 py-px font-mono text-[10px] text-primary-foreground">{dueCount}</span>
+              )}
+            </button>
+          ))}
+        </div>
+        <label className="flex items-center gap-2 rounded-md border bg-background px-2.5 py-1.5 text-sm sm:w-64">
+          <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar empresa ou cargo"
+            aria-label="Buscar empresa ou cargo" className="w-full bg-transparent outline-none placeholder:text-muted-foreground" />
+          <CornerDownLeft className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
+        </label>
       </div>
-      <div className="mt-4 flex items-center gap-2 rounded-xl border bg-background px-3 py-2 text-sm text-muted-foreground">
-        <Search className="h-4 w-4" /> Pesquisar vagas...
+
+      <div className="hidden grid-cols-[1.3fr_1fr_1.4fr_auto] gap-4 border-b bg-muted/50 px-4 py-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground md:grid">
+        <span>Empresa / cargo</span><span>Etapa</span><span>Próxima ação</span><span className="w-24 text-right">Follow-up</span>
       </div>
-      <ul className="mt-3 divide-y">
-        {rows.map((r) => (
-          <li key={r.c} className="flex items-center justify-between gap-3 py-3">
-            <div>
-              <div className="font-semibold">{r.c}</div>
-              <div className="text-xs text-muted-foreground">{r.p}</div>
-            </div>
-            <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${r.t}`}>{r.s}</span>
-          </li>
-        ))}
+
+      <ul className="divide-y">
+        {rows.map((r) => {
+          const isDone = done[r.company];
+          return (
+            <li key={r.company} className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 px-4 py-3 text-sm transition-colors hover:bg-muted/40 md:grid-cols-[1.3fr_1fr_1.4fr_auto] md:items-center">
+              <div className="min-w-0">
+                <div className="font-medium">{r.company}</div>
+                <div className="truncate text-muted-foreground">{r.role}</div>
+              </div>
+              <span className="flex items-center gap-1.5 justify-self-end text-muted-foreground md:justify-self-start">
+                <Circle className={cn("h-2.5 w-2.5 fill-current", STAGE_DOT[r.stage])} aria-hidden />{r.stage}
+              </span>
+              <button onClick={() => setDone((d) => ({ ...d, [r.company]: !d[r.company] }))}
+                className="col-span-2 flex items-center gap-2 text-left md:col-span-1" aria-pressed={isDone}>
+                <span className={cn("inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                  isDone && "border-foreground bg-foreground text-background")}>
+                  {isDone && <Check className="h-3 w-3" />}
+                </span>
+                <span className={cn(isDone && "text-muted-foreground line-through")}>{r.next}</span>
+              </button>
+              <span className={cn("hidden w-24 text-right font-mono text-xs md:block",
+                r.due && !isDone ? "text-primary" : "text-muted-foreground")}>{r.followUp}</span>
+            </li>
+          );
+        })}
+        {rows.length === 0 && <li className="px-4 py-10 text-center text-sm text-muted-foreground">Nenhuma vaga encontrada.</li>}
       </ul>
-      <div className="mt-3 flex items-center gap-2 rounded-xl bg-secondary px-3 py-2 text-sm text-secondary-foreground">
-        <BellRing className="h-4 w-4" /> 2 vagas precisam de follow-up hoje
+
+      <div className="flex items-center justify-between border-t bg-muted/40 px-4 py-2 font-mono text-[11px] text-muted-foreground">
+        <span>{rows.length} de {SAMPLE.length} candidaturas</span>
+        <span>exemplo interativo · clique nas ações</span>
       </div>
     </div>
   );
@@ -201,48 +225,31 @@ function LeadForm() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const parsed = leadSchema.safeParse(Object.fromEntries(fd));
+    const parsed = leadSchema.safeParse(Object.fromEntries(new FormData(e.currentTarget)));
     if (!parsed.success) return toast.error(parsed.error.issues[0].message);
     setLoading(true);
     const { error } = await supabase.from("leads").insert({
-      name: parsed.data.name,
-      email: parsed.data.email,
-      professional_area: parsed.data.professional_area || null,
+      name: parsed.data.name, email: parsed.data.email, professional_area: parsed.data.professional_area || null,
     });
     setLoading(false);
     if (error) return toast.error("Não foi possível enviar. Tente novamente.");
     setDone(true);
-    toast.success("Pronto! Em breve você receberá nossas dicas.");
   }
 
   return (
-    <div className="grid items-center gap-10 rounded-3xl border bg-card p-6 shadow-soft md:grid-cols-2 md:p-10">
+    <div className="grid gap-8 md:grid-cols-[1fr_1.4fr] md:items-end">
       <div>
-        <h2 className="text-3xl font-extrabold">Receba dicas para conseguir mais entrevistas</h2>
-        <p className="mt-3 text-muted-foreground">
-          Deixe seu contato e receba conteúdos práticos sobre currículo, LinkedIn e processos seletivos.
-        </p>
+        <h2 className="text-2xl font-semibold">Dicas práticas para conseguir mais entrevistas.</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Currículo, LinkedIn e processos seletivos. Um e-mail por semana, sem spam.</p>
       </div>
       {done ? (
-        <div className="rounded-2xl bg-success/10 p-6 text-center font-semibold text-success">
-          <CheckCircle2 className="mx-auto mb-2 h-8 w-8" /> Obrigado! Seu cadastro foi recebido.
-        </div>
+        <p className="flex items-center gap-2 rounded-md border px-4 py-3 text-sm"><Check className="h-4 w-4 text-success" /> Cadastro recebido. Obrigado!</p>
       ) : (
-        <form onSubmit={onSubmit} className="grid gap-4">
-          <div className="grid gap-1.5">
-            <Label htmlFor="lead-name">Nome</Label>
-            <Input id="lead-name" name="name" required maxLength={120} autoComplete="name" />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="lead-email">E-mail</Label>
-            <Input id="lead-email" name="email" type="email" required maxLength={255} autoComplete="email" />
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="lead-area">Área profissional</Label>
-            <Input id="lead-area" name="professional_area" maxLength={120} placeholder="Ex.: Tecnologia, Marketing..." />
-          </div>
-          <Button type="submit" size="lg" disabled={loading}>{loading ? "Enviando..." : "Quero receber"}</Button>
+        <form onSubmit={onSubmit} className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto]">
+          <Input name="name" aria-label="Nome" placeholder="Nome" required maxLength={120} autoComplete="name" />
+          <Input name="email" aria-label="E-mail" type="email" placeholder="E-mail" required maxLength={255} autoComplete="email" />
+          <Input name="professional_area" aria-label="Área profissional" placeholder="Área profissional" maxLength={120} />
+          <Button type="submit" disabled={loading}>{loading ? "Enviando..." : "Inscrever"}</Button>
         </form>
       )}
     </div>

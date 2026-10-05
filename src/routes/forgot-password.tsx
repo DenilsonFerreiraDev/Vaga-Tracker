@@ -34,11 +34,11 @@ function Page() {
     setSent(true);
   }
   return (
-    <div className="flex min-h-screen items-center justify-center bg-soft px-4">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center"><Logo /></div>
-        <div className="rounded-2xl border bg-card p-6 shadow-card sm:p-8">
-          <h1 className="text-2xl font-bold">Recuperar senha</h1>
+        <div className="rounded-xl border bg-card p-6 shadow-card sm:p-8">
+          <h1 className="text-xl font-semibold">Recuperar senha</h1>
           {sent ? (
             <p className="mt-3 text-muted-foreground">Se o e-mail estiver cadastrado, você receberá um link para redefinir sua senha.</p>
           ) : (
@@ -47,7 +47,7 @@ function Page() {
                 <Label htmlFor="email">E-mail</Label>
                 <Input id="email" name="email" type="email" required autoComplete="email" />
               </div>
-              <Button type="submit" size="lg" disabled={loading}>{loading ? "Enviando..." : "Enviar link"}</Button>
+              <Button type="submit" disabled={loading}>{loading ? "Enviando..." : "Enviar link"}</Button>
             </form>
           )}
           <Link to="/auth" className="mt-6 block text-center text-sm font-semibold text-primary hover:underline">Voltar ao login</Link>
