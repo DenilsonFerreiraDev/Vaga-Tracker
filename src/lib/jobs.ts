@@ -41,6 +41,34 @@ export const STATUS_COLORS: Record<JobStatus, string> = {
   aprovada: "var(--chart-2)",
 };
 
+export const STATUS_DOT: Record<JobStatus, string> = {
+  aplicada: "bg-muted-foreground",
+  em_analise: "bg-warning",
+  entrevista_rh: "bg-primary",
+  entrevista_tecnica: "bg-primary",
+  teste_tecnico: "bg-primary",
+  aguardando_retorno: "bg-input",
+  rejeitada: "bg-destructive",
+  aprovada: "bg-success",
+};
+
+export const FINAL_STATUSES: JobStatus[] = ["rejeitada", "aprovada"];
+
+export function isFollowUpDue(j: Job, today = todayISO()) {
+  return !!j.follow_up_date && j.follow_up_date <= today && !FINAL_STATUSES.includes(j.status);
+}
+
+export function relativeDay(d: string | null, today = todayISO()) {
+  if (!d) return "—";
+  const diff = Math.round((Date.parse(d) - Date.parse(today)) / 86400000);
+  if (diff === 0) return "Hoje";
+  if (diff === 1) return "Amanhã";
+  if (diff === -1) return "Ontem";
+  if (diff < 0) return `${-diff} dias atrás`;
+  if (diff < 7) return `em ${diff} dias`;
+  return formatDate(d);
+}
+
 export const INTERVIEW_STATUSES: JobStatus[] = ["entrevista_rh", "entrevista_tecnica", "teste_tecnico"];
 export const ANALYSIS_STATUSES: JobStatus[] = ["em_analise", "aguardando_retorno"];
 
