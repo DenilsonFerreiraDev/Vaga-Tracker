@@ -33,7 +33,7 @@ function Page() {
     setLoading(false);
     if (error) { toast.error(error.message); return; }
     toast.success("Senha atualizada!");
-    navigate({ to: "/" });
+    navigate({ to: "/dashboard" });
   }
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">

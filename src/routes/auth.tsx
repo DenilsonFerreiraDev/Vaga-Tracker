@@ -37,10 +37,10 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/", replace: true });
+      if (data.session) navigate({ to: "/dashboard", replace: true });
     });
     const { data } = supabase.auth.onAuthStateChange((_e, session) => {
-      if (session) navigate({ to: "/", replace: true });
+      if (session) navigate({ to: "/dashboard", replace: true });
     });
     return () => data.subscription.unsubscribe();
   }, [navigate]);
@@ -59,7 +59,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: window.location.origin + "/", data: { full_name: name } },
+        options: { emailRedirectTo: window.location.origin + "/auth", data: { full_name: name } },
       });
       setLoading(false);
       if (error) { toast.error(error.message); return; }
