@@ -226,13 +226,13 @@ function LeadForm() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const parsed = leadSchema.safeParse(Object.fromEntries(new FormData(e.currentTarget)));
-    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
+    if (!parsed.success) { toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos"); return; }
     setLoading(true);
     const { error } = await supabase.from("leads").insert({
       name: parsed.data.name, email: parsed.data.email, professional_area: parsed.data.professional_area || null,
     });
     setLoading(false);
-    if (error) return toast.error("Não foi possível enviar. Tente novamente.");
+    if (error) { toast.error("Não foi possível enviar. Tente novamente."); return; }
     setDone(true);
   }
 

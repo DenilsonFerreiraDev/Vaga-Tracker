@@ -48,7 +48,7 @@ function AuthPage() {
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const parsed = schema.safeParse(Object.fromEntries(new FormData(e.currentTarget)));
-    if (!parsed.success) return toast.error(parsed.error.issues[0].message);
+    if (!parsed.success) { toast.error(parsed.error.issues[0]?.message ?? "Dados inválidos"); return; }
     setLoading(true);
     const { email, password, name } = parsed.data;
     if (mode === "login") {
@@ -62,7 +62,7 @@ function AuthPage() {
         options: { emailRedirectTo: window.location.origin + "/", data: { full_name: name } },
       });
       setLoading(false);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       setSent(true);
     }
   }
