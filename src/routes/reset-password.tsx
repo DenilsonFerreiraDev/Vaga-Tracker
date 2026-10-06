@@ -26,12 +26,12 @@ function Page() {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const password = String(fd.get("password"));
-    if (password.length < 6) return toast.error("A senha deve ter pelo menos 6 caracteres");
-    if (password !== fd.get("confirm")) return toast.error("As senhas não conferem");
+    if (password.length < 6) { toast.error("A senha deve ter pelo menos 6 caracteres"); return; }
+    if (password !== fd.get("confirm")) { toast.error("As senhas não conferem"); return; }
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Senha atualizada!");
     navigate({ to: "/" });
   }
