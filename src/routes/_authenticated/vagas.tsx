@@ -126,7 +126,7 @@ function VagasPage() {
   );
 }
 
-function FilterTab({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count?: number }) {
+function FilterTab({ active, onClick, label, count }: { active: boolean; onClick: () => void; label: string; count?: number | undefined }) {
   return (
     <button role="tab" aria-selected={active} onClick={onClick}
       className={cn("shrink-0 rounded-md px-2.5 py-1 text-sm transition-colors", active ? "bg-muted font-medium text-foreground" : "text-muted-foreground hover:text-foreground")}>

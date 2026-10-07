@@ -14,7 +14,7 @@ export const meQuery = queryOptions({
     return {
       id: user.id,
       email: user.email ?? "",
-      name: profile?.full_name ?? (user.user_metadata?.full_name as string | undefined) ?? "",
+      name: profile?.full_name ?? (user.user_metadata?.['full_name'] as string | undefined) ?? "",
       avatarUrl: profile?.avatar_url ?? null,
       isAdmin: !!roles?.some((r) => r.role === "admin"),
     };
